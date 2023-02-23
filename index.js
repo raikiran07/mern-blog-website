@@ -45,7 +45,7 @@ app.get('/test',(req,res)=>{
 
 
 
-app.get('/profile',(req,res)=>{
+app.get('/api/profile',(req,res)=>{
     const {token} = req.cookies
     const user = jwt.verify(token,process.env.JWT_SECRET)
     

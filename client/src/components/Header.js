@@ -11,7 +11,7 @@ const Header = () => {
   const navigate = useNavigate()
   const {setUserInfo,userInfo} = useContext(UserContext) 
   useEffect( ()=>{
-    axios.get('/profile',{
+    axios.get('/api/profile',{
       withCredentials:true
     }).then(res=>{
       const {username:name,userId} = res.data
