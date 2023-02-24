@@ -35,9 +35,7 @@ const blogRouter = require('./Route/blog')
 
 const PORT = process.env.PORT || 4000
 
-app.get('/',(req,res)=>{
-    res.json("hello from root")
-})
+
 
 app.get('/test',(req,res)=>{
     res.json("hello from api")
