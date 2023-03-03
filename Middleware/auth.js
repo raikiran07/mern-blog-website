@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken')
 const authMiddleware = async (req,res,next) => {
   
     const {token} = req.cookies
-    console.log("token:"+token)
+    // console.log("token:"+token)
    
     try {
         const payload = jwt.verify(token,process.env.JWT_SECRET)

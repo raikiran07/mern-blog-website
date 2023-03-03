@@ -6,7 +6,7 @@ const {StatusCodes} = require('http-status-codes')
 
 
 const getAll = async (req,res) => {
-    console.log("hello from get all")
+    // console.log("hello from get all")
     try {
 
         res.json(await Blog.find({}).populate('author',['username']))
