@@ -77,7 +77,7 @@ const PostPage = () => {
       <time>{format(new Date(postInfo.createdAt),'MMM d, yyyy HH:mm')}</time>
         </div>
         <div className="coverImage-wrapper">
-        <img src={`{'http://' + window.location.hostname + '/' + ${postInfo.cover}}`} />
+        <img src={`/${postInfo.cover}`} />
         </div>
         
         <div className="body" dangerouslySetInnerHTML={{__html:postInfo.body}} />
