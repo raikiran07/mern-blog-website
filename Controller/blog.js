@@ -23,15 +23,6 @@ const getAll = async (req,res) => {
 
 const createBlog = async (req,res) => {
    
-    // const name = req.file.originalname
-    // const parts = name.split('.')
-    // const ext = parts[parts.length-1]
-    // const path = req.file.path
-    // const newPath = path+'.'+ext
-    // fs.renameSync(path,newPath)
-    // // console.log(req.body)
-    // const blog = await Blog.create({...req.body,cover:newPath,author:req.user.userId})
-    // res.json(blog)
     
     try {
         const {title,summary,body,file:image} = req.body
@@ -124,10 +115,11 @@ const deleteBlog = async (req,res) => {
     try {
         const {id} = req.params
         const blog = await Blog.findOneAndDelete({_id:id})
-        await cloudinary.uploader.destroy({public_id:blog.cover.public_id})
+        await cloudinary.uploader.destroy({public_id:blog.cover.public_id,overwrite: true,
+            invalidate:true})
         res.status(StatusCodes.OK).json({blog})
     } catch (error) {
-        res.status(StatusCodes.BAD_REQUEST).json({msg:`something went wrong`})
+        res.status(StatusCodes.BAD_REQUEST).json({msg:error.message})
     }
 }
 
