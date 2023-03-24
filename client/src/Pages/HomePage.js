@@ -5,8 +5,10 @@ import axios from 'axios'
 import customFetch from '../utils/customAPI'
 
 
+
 const Home = () => {
  
+
   const [posts,setPost] = useState([])
   const [fetchErr,setFetchErr] = useState(false)
   const [isLoading,setLoading] = useState(true)

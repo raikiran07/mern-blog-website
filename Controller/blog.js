@@ -1,6 +1,7 @@
 const Blog = require('../Model/Blog')
 const fs = require('fs')
 const {StatusCodes} = require('http-status-codes')
+const cloudinary = require('../cloudinary/connect')
 
 
 
@@ -22,15 +23,38 @@ const getAll = async (req,res) => {
 
 const createBlog = async (req,res) => {
    
-    const name = req.file.originalname
-    const parts = name.split('.')
-    const ext = parts[parts.length-1]
-    const path = req.file.path
-    const newPath = path+'.'+ext
-    fs.renameSync(path,newPath)
-    // console.log(req.body)
-    const blog = await Blog.create({...req.body,cover:newPath,author:req.user.userId})
-    res.json(blog)
+    // const name = req.file.originalname
+    // const parts = name.split('.')
+    // const ext = parts[parts.length-1]
+    // const path = req.file.path
+    // const newPath = path+'.'+ext
+    // fs.renameSync(path,newPath)
+    // // console.log(req.body)
+    // const blog = await Blog.create({...req.body,cover:newPath,author:req.user.userId})
+    // res.json(blog)
+    
+    try {
+        const {title,summary,body,file:image} = req.body
+        const result = await cloudinary.uploader.upload(image,{
+            folder:"Blog"
+        })
+
+        const blog = await Blog.create({
+            ...req.body,
+            
+            cover: {
+                public_id: result.public_id,
+                url: result.secure_url
+            },
+            author:req.user.userId
+            
+        });
+
+        res.status(201).json(blog)
+
+    } catch (error) {
+        res.status(400).json({success:false,message:error.message})
+    }
 }
 
 const getSingleBlog = async (req,res) => {
@@ -67,30 +91,32 @@ const updateBlog = async (req,res) => {
     try {
         // console.log("update blog route")
         const {id} = req.params
-        let newPath = null;
-        if (req.file) {
-          const {originalname,path} = req.file;
-          const parts = originalname.split('.');
-          const ext = parts[parts.length - 1];
-          newPath = path+'.'+ext;
-          fs.renameSync(path, newPath);
+       
+        const {title,summary,body,file} = req.body;
+        const blog = await Blog.findById(id)
+        
+        
+       let result
+
+        if (file !== '') {
+          
+                result = await cloudinary.uploader.upload(file, {
+                public_id: blog.cover.public_id,
+                overwrite: true,
+                invalidate:true
+              });
+ 
         }
 
-        const {title,summary,body} = req.body;
-        const blog = await Blog.findById(id)
+        const upBlog = await Blog.findOneAndUpdate({_id:id},{title,summary,body,cover:result ? { 
+                        public_id: result.public_id,
+                        url: result.secure_url
+                    } : blog.cover},{new:true})
 
-        await blog.update({
-            title,
-            summary,
-            body,
-            cover:newPath ? newPath : blog.cover
-        })
-      
-       
-        
-        res.status(StatusCodes.OK).json(`msg:successfully updated`)
+        res.status(StatusCodes.OK).json({msg:"success",blog:upBlog})
+
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({msg:`something went wrong`})
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({msg:error.message})
     }
 }
 
@@ -98,6 +124,7 @@ const deleteBlog = async (req,res) => {
     try {
         const {id} = req.params
         const blog = await Blog.findOneAndDelete({_id:id})
+        await cloudinary.uploader.destroy({public_id:blog.cover.public_id})
         res.status(StatusCodes.OK).json({blog})
     } catch (error) {
         res.status(StatusCodes.BAD_REQUEST).json({msg:`something went wrong`})
